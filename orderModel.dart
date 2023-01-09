@@ -5,34 +5,78 @@ import 'package:flutter/src/widgets/framework.dart';
 
 import 'colors.dart';
 
-class OrderModel extends StatelessWidget {
-  const OrderModel({super.key, required this.tableNumber, required this.order});
+class OrderModel extends StatefulWidget {
+  const OrderModel({super.key, required this.tableNumber, required this.order,  required this.ikona});
   final String tableNumber;
   final String order;
+  final IconButton ikona;
+
+  @override
+  State<OrderModel> createState() => _OrderModelState();
+  
+}
+
+
+class _OrderModelState extends State<OrderModel> with SingleTickerProviderStateMixin {
+   late AnimationController _animationController;
+  late Animation _animation;
+  @override
+  void dispose() {
+    _animationController.dispose();
+    // TODO: implement dispose
+    super.dispose();
+  }
+  void initState() {
+    super.initState();
+    _animationController =
+        AnimationController(vsync: this, duration: Duration(minutes: 10));
+
+    _animation = ColorTween(begin: getColor(0xff51b06d), end: getColor(0xffe80909))
+        .animate(CurvedAnimation(
+            curve: Curves.decelerate, parent: _animationController))
+          ..addListener(() {
+            setState(() {});
+          });
+
+    _animationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _animationController.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        _animationController.repeat(max: 1);
+        _animationController.forward();
+      }
+    });
+    _animationController.forward();
+  }
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
+      duration: Duration(minutes: 10),
       margin: EdgeInsets.all(7),
      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: getColor(0xffba76cf),
+        color: _animation.value,
         borderRadius: BorderRadius.circular(30)
       ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text(tableNumber, style: TextStyle(
-            color: getColor(0xff716575),
-            fontWeight: FontWeight.bold,
-            fontSize: 40,
-          )),
-          SizedBox(width: 15,),
-          Expanded(
-            child: Text(order,style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-          )),
-          )],
+        child: InkWell(
+          onDoubleTap: (){print("deleted");},
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [Text(widget.tableNumber, style: TextStyle(
+              color: getColor(0xff716575),
+              fontWeight: FontWeight.bold,
+              fontSize: 40,
+            )),
+            SizedBox(width: 15,),
+            Expanded(
+              child: Text(widget.order,style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            )),
+            ),
+            widget.ikona,]
+          ),
         ),
     );
   }
